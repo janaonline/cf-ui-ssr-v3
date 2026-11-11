@@ -77,15 +77,3 @@
     </button>
   </div>
 </div>
-<!-- Suggestion section. -->
-<div class="mt-4 text-center">
-  <p class="mb-2 text-white">Suggested Searches:</p>
-  <div class="row justify-content-center gap-2 px-1">
-    @for (item of recentSearchArray; track $index) {
-    <a (click)="dashboardNav(item)" (keydown.enter)="dashboardNav(item)" (keydown.space)="dashboardNav(item)"
-      tabindex="0" role="button" class="centerSearchedValues col-auto">
-      <span class="custom-font-size-6 px-1">{{ item?.name }}</span>
-    </a>
-    }
-  </div>
-</div>
