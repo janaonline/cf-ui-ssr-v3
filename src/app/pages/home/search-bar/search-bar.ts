@@ -30,26 +30,6 @@ export class SearchBar {
   readonly DEFAULT_VALUE = 4000;
   coveredUlbCount = signal<number>(this.DEFAULT_VALUE);
 
-  recentSearchArray = [
-    {
-      type: 'ulb',
-      name: 'Bruhat Bengaluru Mahanagara Palike',
-      _id: '5f5610b3aab0f778b2d2cac0',
-      slug: 'bengaluru',
-    },
-    {
-      type: 'ulb',
-      name: 'Greater Hyderabad Municipal Corporation',
-      _id: '5eb5844f76a3b61f40ba069a',
-      slug: 'hyderabad',
-    },
-    {
-      type: 'ulb',
-      name: 'Greater Mumbai Municipal Corporation',
-      _id: '5eb5844f76a3b61f40ba0695',
-      slug: 'mumbai',
-    },
-  ];
   private destroy$ = new Subject<void>();
   v1Url = environment.v1Url;
   searchKey: string = '';
