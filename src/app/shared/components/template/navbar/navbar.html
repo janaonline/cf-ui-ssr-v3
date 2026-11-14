@@ -104,6 +104,10 @@
         <button class="btn btn-outline-cfPrimary fw-semibold border-2" (click)="showRequestDemoPopup()">
           Request a Demo
         </button>
+        <!-- TS-1262: one unified sign-in page in V2 (role picker, then a home page of module
+             cards), replacing the per-portal Login dropdown below. -->
+        <a class="btn btn-cfPrimary d-flex align-items-center fw-semibold" [href]="signInHref">Sign In</a>
+        <!-- TS-1262: old per-portal Login dropdown, kept commented out for reference.
         <button class="btn btn-cfPrimary d-flex align-items-center fw-semibold" [matMenuTriggerFor]="loginMenu">
           Login&nbsp;
           <i class="bi bi-caret-down-fill"></i>
@@ -123,6 +127,7 @@
           </a>
           }
         </mat-menu>
+        (end of the commented-out Login dropdown) -->
         }
         @if (isBrowser && isAuthReady && isLoggedIn) {
         <button class="btn btn-cfPrimary fw-bold" [matMenuTriggerFor]="logoutMenu">
