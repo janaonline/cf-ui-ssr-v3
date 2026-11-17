@@ -19,7 +19,8 @@ export type NavRoleName =
   | 'XVIFC'
   | 'PARTNER'
   | 'PMU'
-  | 'XVIFC_PMU';
+  | 'MOHUA_PMU'
+  | 'XVIFC_DOE';
 
 export type NavAppKey = 'ui' | 'ssr' | 'v2';
 export type NavHostApp = NavAppKey | 'external';
@@ -35,10 +36,7 @@ export interface NavMenuVisibility {
   ocrRouteOnly?: boolean; // V2 only
   showOnMobileOnly?: boolean; // UI only
 
-  // Route-based gating, independent of role/auth. Before combining more than
-  // one of these three fields on one item, see CLAUDE.md ("How the three
-  // role/route dimensions actually combine") — they don't compose the way
-  // you'd expect.
+  // Route-based gating, independent of role/auth. See CLAUDE.md before combining these fields
   showOnlyOnRoutePrefixes?: string[]; // allow-list
   hideOnRoutePrefixes?: string[]; // deny-list
   hideWhenRoleOnRoute?: { roles: NavRoleName[]; routePrefixes: string[] }; // AND of role + route
@@ -94,15 +92,17 @@ export const NAV_MENU_ITEMS: NavMenuItem[] = [
     visibility: { showOnMobileOnly: true },
   },
   {
-    // Shortcut to V2's unified module-picker landing page (TS-1262), for logged-in users. The CF
-    // logo deliberately stays on the public /home page, so this is the dedicated way back.
+    // TS-1262: the one place to switch between modules (XVI-FC Grants, XV-FC Grants, XVI-FC Data
+    // Collection, State Dashboard, Municipal Data Hub, ...) — V2's unified home page itself. Lives
+    // in every app's header, not behind the CF logo (which stays on the public /home page).
+    // Replaces the old per-module "My Forms" dropdown entries below, which duplicated this.
     id: 'my-modules',
     order: 2,
     label: 'My Modules',
     icon: 'bi bi-grid-fill',
     hostApp: 'v2',
     path: '/',
-    apps: ['ui', 'ssr'],
+    apps: ['ui', 'ssr', 'v2'],
     visibility: { requiresAuth: true },
   },
   {
@@ -186,7 +186,7 @@ export const NAV_MENU_ITEMS: NavMenuItem[] = [
     // would hit every admin sub-page). Same rule on 'blog' below; Dashboard stays visible there.
     visibility: {
       hideWhenRoleOnRoute: {
-        roles: ['ULB', 'STATE', 'MoHUA', 'ADMIN', 'XVIFC_STATE', 'XVIFC', 'XVIFC_PMU'],
+        roles: ['ULB', 'STATE', 'MoHUA', 'ADMIN', 'XVIFC_STATE', 'XVIFC', 'MOHUA_PMU', 'XVIFC_DOE'],
         routePrefixes: ['/xvifc', '/xvifc-form'],
       },
       hideOnRoutePrefixes: ['/admin/xvi-fc-review'],
@@ -202,41 +202,41 @@ export const NAV_MENU_ITEMS: NavMenuItem[] = [
     visibility: {
       // Same rule as Resources above.
       hideWhenRoleOnRoute: {
-        roles: ['ULB', 'STATE', 'MoHUA', 'ADMIN', 'XVIFC_STATE', 'XVIFC', 'XVIFC_PMU'],
+        roles: ['ULB', 'STATE', 'MoHUA', 'ADMIN', 'XVIFC_STATE', 'XVIFC', 'MOHUA_PMU', 'XVIFC_DOE'],
         routePrefixes: ['/xvifc', '/xvifc-form'],
       },
       hideOnRoutePrefixes: ['/admin/xvi-fc-review'],
     },
   },
-  {
-    id: 'fc-15th-grants',
-    order: 40,
-    label: '15<sup>th</sup> FC Grants',
-    hostApp: 'ui',
-    path: '/fc-home-page',
-    apps: ['ui', 'ssr', 'v2'],
-    groupId: 'ulb-forms',
-    groupDefaultLabel: 'My Forms',
-    visibility: {
-      requiresAuth: true,
-      // XVIFC added so this role has zero visible 'ulb-forms' members — see rankings-22-dashboard
-      // below; the whole "My Forms" group must disappear for XVIFC, not just this one entry.
-      // XVIFC_PMU: same story — PMU is a state-level reviewer, not a ULB-forms participant.
-      excludeRoles: ['PMU', 'STATE_DASHBOARD', 'XVIFC_STATE', 'XVIFC', 'XVIFC_PMU'],
-    },
-  },
-  {
-    id: 'fc-16th-grant',
-    order: 35, // lowest among 'ulb-forms' siblings, sorts first — see CLAUDE.md, "Grouping — the My Forms dropdown"
-    label: '16<sup>th</sup> FC Grants',
-    hostApp: 'v2',
-    path: '/xvifc/year',
-    apps: ['ui', 'ssr', 'v2'],
-    groupId: 'ulb-forms',
-    groupDefaultLabel: 'My Forms',
-    activePathPrefix: '/xvifc', // '/xvifc/year' is just the entry point into the whole module
-    visibility: { requiresAuth: true, roles: ['ULB', 'STATE', 'MoHUA', 'ADMIN'] },
-  },
+  // TS-1262: superseded by 'my-modules' above — kept commented (not deleted) until verified in
+  // production, then remove for good.
+  // {
+  //   id: 'fc-15th-grants',
+  //   order: 40,
+  //   label: '15<sup>th</sup> FC Grants',
+  //   hostApp: 'ui',
+  //   path: '/fc-home-page',
+  //   apps: ['ui', 'ssr', 'v2'],
+  //   groupId: 'ulb-forms',
+  //   groupDefaultLabel: 'My Forms',
+  //   visibility: {
+  //     requiresAuth: true,
+  //     // XVIFC/MOHUA_PMU/XVIFC_DOE have no visible 'ulb-forms' members; hide the entire "My Forms" group, not just this entry.
+  //     excludeRoles: ['PMU', 'STATE_DASHBOARD', 'XVIFC_STATE', 'XVIFC', 'MOHUA_PMU', 'XVIFC_DOE'],
+  //   },
+  // },
+  // {
+  //   id: 'fc-16th-grant',
+  //   order: 35, // lowest among 'ulb-forms' siblings, sorts first — see CLAUDE.md, "Grouping — the My Forms dropdown"
+  //   label: '16<sup>th</sup> FC Grants',
+  //   hostApp: 'v2',
+  //   path: '/xvifc/year',
+  //   apps: ['ui', 'ssr', 'v2'],
+  //   groupId: 'ulb-forms',
+  //   groupDefaultLabel: 'My Forms',
+  //   activePathPrefix: '/xvifc', // '/xvifc/year' is just the entry point into the whole module
+  //   visibility: { requiresAuth: true, roles: ['ULB', 'STATE', 'MoHUA', 'ADMIN'] },
+  // },
   {
     id: 'rankings-22-dashboard',
     order: 45, // sorts 3rd among 'ulb-forms' siblings, between fc-16th-grant (35) and xvi-fc-data-collection (50)
@@ -247,28 +247,26 @@ export const NAV_MENU_ITEMS: NavMenuItem[] = [
     isDisabled: true,
     groupId: 'ulb-forms',
     groupDefaultLabel: 'My Forms',
-    // XVIFC: this was the only 'ulb-forms' member still visible to that role — excluding it here
-    // makes the whole "My Forms" group disappear for XVIFC (see fc-15th-grants above).
-    // XVIFC_STATE: same story — this was XVIFC_STATE's one remaining visible member.
-    // XVIFC_PMU: same story again — this was PMU's one remaining visible 'ulb-forms' member once
-    // fc-15th-grants excluded it above.
+    // XVIFC/XVIFCSTATE/XVIFCPMU: last visible 'ulb-forms' member; excluding it hides the entire "My Forms" group
     visibility: {
       requiresAuth: true,
       readonlyGated: true,
-      excludeRoles: ['ULB', 'STATE_DASHBOARD', 'XVIFC', 'XVIFC_STATE', 'XVIFC_PMU'],
+      excludeRoles: ['ULB', 'STATE_DASHBOARD', 'XVIFC', 'XVIFC_STATE', 'MOHUA_PMU', 'XVIFC_DOE'],
     },
   },
-  {
-    id: 'xvi-fc-data-collection',
-    order: 50,
-    label: 'XVI FC Data Collection',
-    hostApp: 'v2',
-    path: '/xvifc-form',
-    apps: ['ui', 'ssr', 'v2'],
-    groupId: 'ulb-forms',
-    groupDefaultLabel: 'My Forms',
-    visibility: { requiresAuth: true, roles: ['ULB'] },
-  },
+  // TS-1262: superseded by 'my-modules' above — kept commented (not deleted) until verified in
+  // production, then remove for good.
+  // {
+  //   id: 'xvi-fc-data-collection',
+  //   order: 50,
+  //   label: 'XVI FC Data Collection',
+  //   hostApp: 'v2',
+  //   path: '/xvifc-form',
+  //   apps: ['ui', 'ssr', 'v2'],
+  //   groupId: 'ulb-forms',
+  //   groupDefaultLabel: 'My Forms',
+  //   visibility: { requiresAuth: true, roles: ['ULB'] },
+  // },
   {
     id: 'state-dashboard',
     order: 60,
@@ -317,11 +315,44 @@ export const NAV_MENU_ITEMS: NavMenuItem[] = [
     },
   },
   {
+    id: 'digitization',
+    order: 95,
+    label: 'Digitization',
+    apps: ['v2'], // V2-only pages; no sync needed to ui / ssr
+    visibility: { requiresAuth: true, roles: ['ADMIN'] },
+    children: [
+      // {
+      //   id: 'digitization.afs-dashboard',
+      //   order: 10,
+      //   label: 'AFS Dashboard',
+      //   hostApp: 'v2',
+      //   path: '/afs-dashboard',
+      //   apps: ['v2'],
+      // },
+      {
+        id: 'digitization.afs-digitization',
+        order: 20,
+        label: 'AFS Digitization',
+        hostApp: 'v2',
+        path: '/afs-digitization-v3',
+        apps: ['v2'],
+      },
+      {
+        id: 'digitization.afs-digitization-jobs',
+        order: 30,
+        label: 'AFS Digitization Jobs',
+        hostApp: 'v2',
+        path: '/ocr/afs-digitization/list',
+        apps: ['v2'],
+      },
+    ],
+  },
+  {
     id: 'ocr',
     order: 100,
     label: 'OCR',
     apps: ['v2'],
-    visibility: { ocrRouteOnly: true },
+    visibility: { ocrRouteOnly: true, roles: ['ADMIN'] },
     children: [
       {
         id: 'ocr.job-details',
@@ -363,6 +394,38 @@ export const NAV_MENU_ITEMS: NavMenuItem[] = [
         path: '/ocr/eval-run-compare',
         apps: ['v2'],
       },
+      {
+        id: 'ocr.dur',
+        order: 60,
+        label: 'DUR Validation',
+        hostApp: 'v2',
+        path: '/ocr/dur',
+        apps: ['v2'],
+      },
+      {
+        id: 'ocr.dur-list',
+        order: 70,
+        label: 'DUR Validation List',
+        hostApp: 'v2',
+        path: '/ocr/dur-list',
+        apps: ['v2'],
+      },
+      {
+        id: 'ocr.afs-digitization',
+        order: 60,
+        label: 'AFS Digitization',
+        hostApp: 'v2',
+        path: '/ocr/afs-digitization/upload',
+        apps: ['v2'],
+      },
+      {
+        id: 'ocr.afs-digitization-list',
+        order: 70,
+        label: 'AFS Digitization List',
+        hostApp: 'v2',
+        path: '/ocr/afs-digitization/list',
+        apps: ['v2'],
+      },
     ],
   },
 ];
@@ -389,10 +452,7 @@ export function resolveMenus(
 }
 
 /** Stamps `isActiveRoute` on `item` and every descendant; a parent is active if any child is. */
-function stampActive(
-  item: NavMenuItem,
-  isActiveRoute: (item: NavMenuItem) => boolean,
-): NavMenuItem {
+function stampActive(item: NavMenuItem, isActiveRoute: (item: NavMenuItem) => boolean): NavMenuItem {
   const children = item.children?.map((child) => stampActive(child, isActiveRoute));
   return {
     ...item,
@@ -401,22 +461,14 @@ function stampActive(
   };
 }
 
-function filterVisible(
-  items: NavMenuItem[],
-  isVisible: (item: NavMenuItem) => boolean,
-): NavMenuItem[] {
+function filterVisible(items: NavMenuItem[], isVisible: (item: NavMenuItem) => boolean): NavMenuItem[] {
   return items
     .filter(isVisible)
-    .map((item) =>
-      item.children?.length ? { ...item, children: filterVisible(item.children, isVisible) } : item,
-    )
+    .map((item) => (item.children?.length ? { ...item, children: filterVisible(item.children, isVisible) } : item))
     .filter((item) => !item.children || item.children.length > 0);
 }
 
-function groupAndSort(
-  items: NavMenuItem[],
-  isActiveGroupChild?: (item: NavMenuItem) => boolean,
-): NavMenuItem[] {
+function groupAndSort(items: NavMenuItem[], isActiveGroupChild?: (item: NavMenuItem) => boolean): NavMenuItem[] {
   const groups = new Map<string, NavMenuItem[]>();
   for (const item of items) {
     if (!item.groupId) continue;
