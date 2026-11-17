@@ -26,5 +26,14 @@
     </div>
   </header>
 
-  <app-navbar></app-navbar>
+  <!-- ngSkipHydration: nav item visibility depends on isLoggedIn, which is only ever false during
+       SSR (no session available on the server) — so auth-gated items like "My Modules" are never
+       in the server-rendered HTML, only inserted later once the client resolves the real session.
+       That late, hydration-grafted insertion is why its icon (a web-font glyph on a ::before
+       pseudo-element) can render blank: if it lands after the icon font's own load-triggered
+       repaint has already happened, nothing re-scans it for the now-ready glyph. Skipping
+       hydration makes Angular fully re-render the header client-side in one clean pass instead of
+       grafting onto a server-painted tree that never had these items, so everything (icon
+       included) paints together once real auth state is known. -->
+  <app-navbar ngSkipHydration></app-navbar>
 </div>
