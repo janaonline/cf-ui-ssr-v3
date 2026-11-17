@@ -315,11 +315,44 @@ export const NAV_MENU_ITEMS: NavMenuItem[] = [
     },
   },
   {
+    id: 'digitization',
+    order: 95,
+    label: 'Digitization',
+    apps: ['v2'], // V2-only pages; no sync needed to ui / ssr
+    visibility: { requiresAuth: true, roles: ['ADMIN'] },
+    children: [
+      // {
+      //   id: 'digitization.afs-dashboard',
+      //   order: 10,
+      //   label: 'AFS Dashboard',
+      //   hostApp: 'v2',
+      //   path: '/afs-dashboard',
+      //   apps: ['v2'],
+      // },
+      {
+        id: 'digitization.afs-digitization',
+        order: 20,
+        label: 'AFS Digitization',
+        hostApp: 'v2',
+        path: '/afs-digitization-v3',
+        apps: ['v2'],
+      },
+      {
+        id: 'digitization.afs-digitization-jobs',
+        order: 30,
+        label: 'AFS Digitization Jobs',
+        hostApp: 'v2',
+        path: '/ocr/afs-digitization/list',
+        apps: ['v2'],
+      },
+    ],
+  },
+  {
     id: 'ocr',
     order: 100,
     label: 'OCR',
     apps: ['v2'],
-    visibility: { ocrRouteOnly: true },
+    visibility: { ocrRouteOnly: true, roles: ['ADMIN'] },
     children: [
       {
         id: 'ocr.job-details',
@@ -361,6 +394,38 @@ export const NAV_MENU_ITEMS: NavMenuItem[] = [
         path: '/ocr/eval-run-compare',
         apps: ['v2'],
       },
+      {
+        id: 'ocr.dur',
+        order: 60,
+        label: 'DUR Validation',
+        hostApp: 'v2',
+        path: '/ocr/dur',
+        apps: ['v2'],
+      },
+      {
+        id: 'ocr.dur-list',
+        order: 70,
+        label: 'DUR Validation List',
+        hostApp: 'v2',
+        path: '/ocr/dur-list',
+        apps: ['v2'],
+      },
+      {
+        id: 'ocr.afs-digitization',
+        order: 60,
+        label: 'AFS Digitization',
+        hostApp: 'v2',
+        path: '/ocr/afs-digitization/upload',
+        apps: ['v2'],
+      },
+      {
+        id: 'ocr.afs-digitization-list',
+        order: 70,
+        label: 'AFS Digitization List',
+        hostApp: 'v2',
+        path: '/ocr/afs-digitization/list',
+        apps: ['v2'],
+      },
     ],
   },
 ];
@@ -387,10 +452,7 @@ export function resolveMenus(
 }
 
 /** Stamps `isActiveRoute` on `item` and every descendant; a parent is active if any child is. */
-function stampActive(
-  item: NavMenuItem,
-  isActiveRoute: (item: NavMenuItem) => boolean,
-): NavMenuItem {
+function stampActive(item: NavMenuItem, isActiveRoute: (item: NavMenuItem) => boolean): NavMenuItem {
   const children = item.children?.map((child) => stampActive(child, isActiveRoute));
   return {
     ...item,
@@ -399,22 +461,14 @@ function stampActive(
   };
 }
 
-function filterVisible(
-  items: NavMenuItem[],
-  isVisible: (item: NavMenuItem) => boolean,
-): NavMenuItem[] {
+function filterVisible(items: NavMenuItem[], isVisible: (item: NavMenuItem) => boolean): NavMenuItem[] {
   return items
     .filter(isVisible)
-    .map((item) =>
-      item.children?.length ? { ...item, children: filterVisible(item.children, isVisible) } : item,
-    )
+    .map((item) => (item.children?.length ? { ...item, children: filterVisible(item.children, isVisible) } : item))
     .filter((item) => !item.children || item.children.length > 0);
 }
 
-function groupAndSort(
-  items: NavMenuItem[],
-  isActiveGroupChild?: (item: NavMenuItem) => boolean,
-): NavMenuItem[] {
+function groupAndSort(items: NavMenuItem[], isActiveGroupChild?: (item: NavMenuItem) => boolean): NavMenuItem[] {
   const groups = new Map<string, NavMenuItem[]>();
   for (const item of items) {
     if (!item.groupId) continue;
